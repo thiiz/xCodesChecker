@@ -36,9 +36,7 @@ export function TestResults({ results, isLoading, currentTestingIndex, onBack }:
     const [expandedResult, setExpandedResult] = useState<number | null>(null);
     const [copiedField, setCopiedField] = useState<{ index: number, field: string } | null>(null);
     const [totalAccounts, setTotalAccounts] = useState<number>(0);
-
-    // Removed reset of expanded result when new results come in
-    // This allows users to keep results expanded during testing
+    const [autoScroll, setAutoScroll] = useState(true);
 
     // Get total accounts from localStorage
     useEffect(() => {
@@ -110,8 +108,15 @@ export function TestResults({ results, isLoading, currentTestingIndex, onBack }:
                     <div className="h-[500px]">
                         <Virtuoso
                             data={results}
+                            followOutput={autoScroll}
+                            atBottomStateChange={(isAtBottom) => {
+                                if (!isAtBottom) {
+                                    setAutoScroll(false);
+                                }
+                                setAutoScroll(true);
+                            }}
                             itemContent={(index, result) => (
-                                <SlideIn key={`${result.account.name}-${index}`} delay={index}>
+                                <SlideIn key={`${result.account.name}-${index}`}>
                                     <div
                                         className={`p-3 rounded-md border ${result.status.success
                                             ? 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800'
