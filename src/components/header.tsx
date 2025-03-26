@@ -9,7 +9,7 @@ export function Header() {
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto flex h-14 items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <h1 className="text-xl font-bold">xCodeGenerator</h1>
+                    <h1 className="text-xl font-bold">xCodeChecker</h1>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" asChild className="rounded-full">

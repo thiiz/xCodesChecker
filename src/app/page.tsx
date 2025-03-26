@@ -7,18 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { testAccount } from "./actions";
 
 type GeneratedAccount = {
   name: string;
   password: string;
   url: string;
-}
-
-type TestStatus = {
-  isLoading: boolean;
-  success?: boolean;
-  data?: ProfileData;
-  error?: string;
 }
 
 type AccountTestResult = {
@@ -66,19 +60,19 @@ export default function Home() {
               setCurrentTestingIndex(i);
 
               try {
-                // Call our API endpoint
-                const response = await fetch(
-                  `/api/test-account?username=${encodeURIComponent(account.name)}&password=${encodeURIComponent(account.password)}&url=${encodeURIComponent(account.url)}`
+                // Call our server action instead of API endpoint
+                const result = await testAccount(
+                  account.name,
+                  account.password,
+                  account.url
                 );
 
-                const data = await response.json();
-
-                if (!response.ok) {
+                if (!result.success) {
                   results.push({
                     account,
                     status: {
                       success: false,
-                      error: data.error || 'Failed to test account'
+                      error: result.error || 'Failed to test account'
                     }
                   });
                 } else {
@@ -86,7 +80,7 @@ export default function Home() {
                     account,
                     status: {
                       success: true,
-                      data: data as ProfileData
+                      data: result.data
                     }
                   });
                 }

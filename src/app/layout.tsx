@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "xCodeGenerator - Account Generator",
+  title: "xCodeChecker - Account Generator",
   description: "Generate and test accounts easily",
 };
 

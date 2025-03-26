@@ -93,88 +93,43 @@ export function FileUpload({ onAccountsLoaded }: FileUploadProps) {
     const parseAccountsFromText = (text: string): AccountData[] => {
         const accounts: AccountData[] = [];
 
-        // Identificar possíveis delimitadores de blocos de contas
-        const possibleDelimiters = [
-            '🇳‌ᗩS ⭐⭐', // Formato original
-            'MUZO37 ⭐⭐', // Outro formato similar
-            '🌀 𝐈𝐏𝐓𝐕 𝐒𝐂𝐀𝐍 🌀', // Formato do grupo do feh
-            '╭─➤🌀', // Outro possível delimitador
-            '\n\n' // Blocos separados por linhas em branco
-        ];
+        // Divide o texto em blocos de contas usando o delimitador específico
+        const accountBlocks = text.split('\n');
+        console.log("accountBlocks: ", accountBlocks)
+        const m3uUrlRegex = /([\w.:/]+\/get\.php\?username=[^&]+&password=[^&]+&type=m3u_plus)/i;
 
-        // Tentar dividir o texto usando diferentes delimitadores
-        let accountBlocks: string[] = [];
-        for (const delimiter of possibleDelimiters) {
-            const blocks = text.split(delimiter);
-            if (blocks.length > 1) {
-                accountBlocks = blocks;
-                break;
-            }
-        }
-
-        // Se nenhum delimitador conhecido for encontrado, tente dividir por linhas em branco
-        if (accountBlocks.length <= 1) {
-            accountBlocks = text.split(/\n\s*\n/);
-        }
-
-        // Processar cada bloco
-        for (let i = 0; i < accountBlocks.length; i++) {
+        // Processa cada bloco (ignorando o primeiro se estiver vazio)
+        for (let i = 1; i < accountBlocks.length; i++) {
             const block = accountBlocks[i];
-            if (!block.trim()) continue; // Ignorar blocos vazios
 
-            // Tentar extrair informações usando diferentes padrões
-            let username = '';
-            let password = '';
-            let url = '';
+            // Busca a URL m3u no bloco de forma genérica
+            const m3uUrlMatch = block.match(m3uUrlRegex);
+            if (m3uUrlMatch) {
+                const m3uUrl = m3uUrlMatch[1].trim();
 
-            // Padrão 1: Formato original com Usᴇʀɴᴀᴍᴇ:⮕, Pᴀssᴡᴏʀᴅ: ⮕, Hᴏsᴛ:⮕
-            const usernameMatch1 = block.match(/Us[eᴇ]r[nɴ]ᴀᴍ[eᴇ]:?[⮕\s]*([^\n]+)/i);
-            const passwordMatch1 = block.match(/P[aᴀ]ss[wᴡ][oᴏ]r[dᴅ]:?[⮕\s]*([^\n]+)/i);
-            const urlMatch1 = block.match(/H[oᴏ]s[tᴛ]:?[⮕\s]*([^\n]+)/i);
+                try {
+                    // Faz o parsing da URL utilizando o objeto URL do JavaScript
+                    const urlObj = new URL(m3uUrl);
+                    const username = urlObj.searchParams.get('username');
+                    const password = urlObj.searchParams.get('password');
+                    const host = urlObj.origin; // Inclui protocolo, domínio e porta (se houver)
 
-            // Padrão 2: Formato com 𝗨𝘀𝗲𝗿 ➤, 𝗣𝗮𝘀𝘀 ➤, 𝗛𝗢𝗦𝗧 ➤
-            const usernameMatch2 = block.match(/[Uu]ser\s*[➤:>]\s*([^\n]+)/i);
-            const passwordMatch2 = block.match(/[Pp]ass\s*[➤:>]\s*([^\n]+)/i);
-            const hostMatch2 = block.match(/[Hh][Oo][Ss][Tt]\s*[➤:>]\s*([^\n]+)/i);
-
-            // Padrão 3: Formato com m3u_Url ou Link contendo username e password
-            const m3uMatch = block.match(/(?:m3u_Url|Lɪɴᴋ)[➤:>\s]*([^\s\n]+)/i);
-
-            // Extrair username, password e url do link m3u se disponível
-            if (m3uMatch) {
-                const m3uUrl = m3uMatch[1].trim();
-                const urlParams = new URL(m3uUrl);
-                const extractedUsername = urlParams.searchParams.get('username');
-                const extractedPassword = urlParams.searchParams.get('password');
-                const extractedHost = urlParams.origin;
-
-                if (extractedUsername) username = extractedUsername;
-                if (extractedPassword) password = extractedPassword;
-                if (extractedHost) url = extractedHost;
-            }
-
-            // Priorizar os matches diretos sobre os extraídos da URL
-            if (usernameMatch1) username = usernameMatch1[1].trim();
-            else if (usernameMatch2) username = usernameMatch2[1].trim();
-
-            if (passwordMatch1) password = passwordMatch1[1].trim();
-            else if (passwordMatch2) password = passwordMatch2[1].trim();
-
-            if (urlMatch1) url = urlMatch1[1].trim();
-            else if (hostMatch2) url = hostMatch2[1].trim();
-
-            // Adicionar a conta se todos os campos necessários foram encontrados
-            if (username && password && url) {
-                accounts.push({
-                    name: username,
-                    password: password,
-                    url: url
-                });
+                    if (username && password) {
+                        accounts.push({
+                            name: username,
+                            password: password,
+                            url: host
+                        });
+                    }
+                } catch (error) {
+                    console.error("URL inválida:", m3uUrl, error);
+                }
             }
         }
 
         return accounts;
     };
+
 
     return (
         <FadeIn>
@@ -185,7 +140,7 @@ export function FileUpload({ onAccountsLoaded }: FileUploadProps) {
                         Carregar Contas
                     </CardTitle>
                     <CardDescription>
-                        Selecione um arquivo .txt contendo as contas para testar (suporta múltiplos formatos)
+                        Selecione um arquivo .txt contendo as contas para testar
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -197,6 +152,7 @@ export function FileUpload({ onAccountsLoaded }: FileUploadProps) {
                             disabled={isUploading}
                             className="flex-1 cursor-pointer"
                             id="file-upload"
+                            placeholder='teste'
                         />
                         <Button
                             variant="outline"

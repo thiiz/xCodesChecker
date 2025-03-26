@@ -6,7 +6,7 @@ import { FadeIn, ScaleIn, SlideIn } from '@/components/ui/animation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { copyToClipboard } from '@/utils/copyToClipboard';
-import { AlertCircle, CheckCircle, Clock, Loader2, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Download, Loader2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type GeneratedAccount = {
@@ -36,10 +36,8 @@ export function TestResults({ results, isLoading, currentTestingIndex, onBack }:
     const [copiedField, setCopiedField] = useState<{ index: number, field: string } | null>(null);
     const [totalAccounts, setTotalAccounts] = useState<number>(0);
 
-    // Reset expanded result when new results come in
-    useEffect(() => {
-        setExpandedResult(null);
-    }, [results]);
+    // Removed reset of expanded result when new results come in
+    // This allows users to keep results expanded during testing
 
     // Get total accounts from localStorage
     useEffect(() => {
@@ -223,16 +221,59 @@ export function TestResults({ results, isLoading, currentTestingIndex, onBack }:
                             </SlideIn>
                         )}
                     </div>
-                    {!isLoading && onBack && (
-                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <Button
-                                variant="outline"
-                                onClick={onBack}
-                                className="w-full"
-                                size="lg"
-                            >
-                                Voltar
-                            </Button>
+                    {!isLoading && (
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+                            {results.filter(result => result.status.success).length > 0 && (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        const successfulAccounts = results.filter(result => result.status.success);
+                                        let fileContent = `Scan date - ${new Date().getTime()}:\n\n`;
+
+                                        successfulAccounts.forEach(result => {
+                                            fileContent += `m3u_url: ${result.account.url}/get.php?username=${result.account.name}&password=${result.account.password}&type=m3u_plus\n`;
+                                            // if (result.status.data) {
+                                            //     if (result.status.data.expirationDate) {
+                                            //         fileContent += `Expira em: ${new Date(parseInt(result.status.data.expirationDate) * 1000).toLocaleDateString()}\n`;
+                                            //     }
+                                            //     if (result.status.data.maxConnections) {
+                                            //         fileContent += `Conexões: ${result.status.data.activeConnections || '0'}/${result.status.data.maxConnections}\n`;
+                                            //     }
+                                            //     if (result.status.data.status) {
+                                            //         fileContent += `Status: ${result.status.data.status}\n`;
+                                            //     }
+                                            // }
+                                            fileContent += "\n";
+                                        });
+
+                                        const blob = new Blob([fileContent], { type: 'text/plain' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `iptv_accounts_${new Date().getTime()}.txt`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(url);
+                                    }}
+                                    className="w-full"
+                                    size="lg"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Exportar Contas Funcionando
+                                </Button>
+                            )}
+
+                            {onBack && (
+                                <Button
+                                    variant="outline"
+                                    onClick={onBack}
+                                    className="w-full"
+                                    size="lg"
+                                >
+                                    Voltar
+                                </Button>
+                            )}
                         </div>
                     )}
                 </CardContent>

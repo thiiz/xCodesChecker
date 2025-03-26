@@ -113,7 +113,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  input[type='file']::file-selector-button {
+    @apply file:mr-4 text-muted-foreground;
   }
 }

@@ -1,20 +1,19 @@
+'use server'
+
 import { ProfileData } from "@/@types/ProfileData";
-import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function testAccount(username: string, password: string, url: string): Promise<{
+    success: boolean;
+    data?: ProfileData;
+    error?: string;
+}> {
     try {
-        // Get query parameters
-        const searchParams = request.nextUrl.searchParams;
-        const username = searchParams.get("username");
-        const password = searchParams.get("password");
-        const url = searchParams.get("url");
-
         // Validate parameters
         if (!username || !password || !url) {
-            return NextResponse.json(
-                { error: "Missing required parameters" },
-                { status: 400 }
-            );
+            return {
+                success: false,
+                error: "Missing required parameters"
+            };
         }
 
         // Clean URL if needed (remove trailing slashes)
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
 
         // Construct the API URL
         const apiUrl = `${cleanUrl}/player_api.php?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
-        console.log("apiUrl: ", apiUrl)
+
         // Make the request to the service
         const response = await fetch(apiUrl, {
             method: "GET",
@@ -33,10 +32,10 @@ export async function GET(request: NextRequest) {
 
         // Check if the request was successful
         if (!response.ok) {
-            return NextResponse.json(
-                { error: `Failed to test account: ${response.statusText}` },
-                { status: response.status }
-            );
+            return {
+                success: false,
+                error: `Failed to test account: ${response.statusText}`
+            };
         }
 
         // Parse the response
@@ -62,12 +61,15 @@ export async function GET(request: NextRequest) {
             updatedAt: Date.now(),
         };
 
-        return NextResponse.json(profileData);
+        return {
+            success: true,
+            data: profileData
+        };
     } catch (error) {
         console.error("Error testing account:", error);
-        return NextResponse.json(
-            { error: "Failed to test account" },
-            { status: 500 }
-        );
+        return {
+            success: false,
+            error: "Failed to test account"
+        };
     }
 }
