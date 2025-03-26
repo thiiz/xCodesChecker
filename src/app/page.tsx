@@ -51,16 +51,24 @@ export default function Home() {
         try {
           const accounts = JSON.parse(storedAccounts) as GeneratedAccount[];
           if (accounts.length > 0) {
-            // Testar todas as contas
+            // Remover contas duplicadas
+            const uniqueAccounts = accounts.filter((account, index, self) =>
+              index === self.findIndex(a =>
+                a.name === account.name &&
+                a.password === account.password &&
+                a.url === account.url
+              )
+            );
+
+            // Testar todas as contas únicas
             const results: AccountTestResult[] = [];
             setTestResults(results);
 
-            for (let i = 0; i < accounts.length; i++) {
-              const account = accounts[i];
+            for (let i = 0; i < uniqueAccounts.length; i++) {
+              const account = uniqueAccounts[i];
               setCurrentTestingIndex(i);
 
               try {
-                // Call our server action instead of API endpoint
                 const result = await testAccount(
                   account.name,
                   account.password,
@@ -85,10 +93,7 @@ export default function Home() {
                   });
                 }
 
-                // Atualizar os resultados em tempo real
                 setTestResults([...results]);
-
-                // Pequena pausa para melhor visualização da animação
                 await new Promise(resolve => setTimeout(resolve, 300));
 
               } catch (error) {
@@ -101,7 +106,6 @@ export default function Home() {
                   }
                 });
 
-                // Atualizar os resultados em tempo real
                 setTestResults([...results]);
               }
             }

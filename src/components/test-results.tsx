@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { copyToClipboard } from '@/utils/copyToClipboard';
 import { AlertCircle, CheckCircle, Clock, Download, Loader2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Virtuoso } from 'react-virtuoso';
 
 type GeneratedAccount = {
     name: string;
@@ -106,108 +107,110 @@ export function TestResults({ results, isLoading, currentTestingIndex, onBack }:
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                        {results.map((result, index) => (
-                            <SlideIn key={`${result.account.name}-${index}`} delay={index}>
-                                <div
-                                    className={`p-3 rounded-md border ${result.status.success
-                                        ? 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800'
-                                        : 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800'} 
+                    <div className="h-[500px]">
+                        <Virtuoso
+                            data={results}
+                            itemContent={(index, result) => (
+                                <SlideIn key={`${result.account.name}-${index}`} delay={index}>
+                                    <div
+                                        className={`p-3 rounded-md border ${result.status.success
+                                            ? 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800'
+                                            : 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800'} 
                     cursor-pointer transition-all duration-300 hover:shadow-sm`}
-                                    onClick={() => setExpandedResult(expandedResult === index ? null : index)}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            {result.status.success ? (
-                                                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                            ) : (
-                                                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                            )}
-                                            <span className="font-medium truncate max-w-[200px]">{result.account.name}</span>
-                                        </div>
-                                        <span className="text-xs text-muted-foreground">
-                                            {result.status.success ? 'Funcionando' : 'Falhou'}
-                                        </span>
-                                    </div>
-
-                                    {expandedResult === index && (
-                                        <ScaleIn>
-                                            <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-gray-700 space-y-2 text-sm">
-                                                <div className="grid grid-cols-[100px_1fr_auto] gap-2 items-center">
-                                                    <span className="text-muted-foreground">URL:</span>
-                                                    <span className="truncate">{result.account.url}</span>
-                                                    <ButtonCopy
-                                                        onClick={() => {
-                                                            copyToClipboard({ text: result.account.url });
-                                                            setCopiedField({ index, field: 'url' });
-                                                            setTimeout(() => setCopiedField(null), 2000);
-                                                        }}
-                                                        isCopied={copiedField?.index === index && copiedField?.field === 'url'}
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-[100px_1fr_auto] gap-2 items-center">
-                                                    <span className="text-muted-foreground">Usuário:</span>
-                                                    <span className="truncate">{result.account.name}</span>
-                                                    <ButtonCopy
-                                                        onClick={() => {
-                                                            copyToClipboard({ text: result.account.name });
-                                                            setCopiedField({ index, field: 'name' });
-                                                            setTimeout(() => setCopiedField(null), 2000);
-                                                        }}
-                                                        isCopied={copiedField?.index === index && copiedField?.field === 'name'}
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-[100px_1fr_auto] gap-2 items-center">
-                                                    <span className="text-muted-foreground">Senha:</span>
-                                                    <span className="truncate">{result.account.password}</span>
-                                                    <ButtonCopy
-                                                        onClick={() => {
-                                                            copyToClipboard({ text: result.account.password });
-                                                            setCopiedField({ index, field: 'password' });
-                                                            setTimeout(() => setCopiedField(null), 2000);
-                                                        }}
-                                                        isCopied={copiedField?.index === index && copiedField?.field === 'password'}
-                                                    />
-                                                </div>
-
-                                                {result.status.success && result.status.data && (
-                                                    <>
-                                                        {result.status.data.expirationDate && (
-                                                            <div className="grid grid-cols-[100px_1fr] gap-2">
-                                                                <span className="text-muted-foreground">Expira em:</span>
-                                                                <span>{new Date(parseInt(result.status.data.expirationDate) * 1000).toLocaleDateString()}</span>
-                                                            </div>
-                                                        )}
-                                                        {result.status.data.maxConnections && (
-                                                            <div className="grid grid-cols-[100px_1fr] gap-2">
-                                                                <span className="text-muted-foreground">Conexões:</span>
-                                                                <span>{result.status.data.activeConnections || '0'}/{result.status.data.maxConnections}</span>
-                                                            </div>
-                                                        )}
-                                                        {result.status.data.status && (
-                                                            <div className="grid grid-cols-[100px_1fr] gap-2">
-                                                                <span className="text-muted-foreground">Status:</span>
-                                                                <span className="capitalize">{result.status.data.status}</span>
-                                                            </div>
-                                                        )}
-                                                    </>
+                                        onClick={() => setExpandedResult(expandedResult === index ? null : index)}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                {result.status.success ? (
+                                                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                                ) : (
+                                                    <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                                                 )}
-
-                                                {!result.status.success && result.status.error && (
-                                                    <div className="flex items-start gap-2 text-red-600 dark:text-red-400">
-                                                        <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                                        <span>{result.status.error}</span>
-                                                    </div>
-                                                )}
+                                                <span className="font-medium truncate max-w-[200px]">{result.account.name}</span>
                                             </div>
-                                        </ScaleIn>
-                                    )}
-                                </div>
-                            </SlideIn>
-                        ))}
+                                            <span className="text-xs text-muted-foreground">
+                                                {result.status.success ? 'Funcionando' : 'Falhou'}
+                                            </span>
+                                        </div>
 
+                                        {expandedResult === index && (
+                                            <ScaleIn>
+                                                <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-gray-700 space-y-2 text-sm">
+                                                    <div className="grid grid-cols-[100px_1fr_auto] gap-2 items-center">
+                                                        <span className="text-muted-foreground">URL:</span>
+                                                        <span className="truncate">{result.account.url}</span>
+                                                        <ButtonCopy
+                                                            onClick={() => {
+                                                                copyToClipboard({ text: result.account.url });
+                                                                setCopiedField({ index, field: 'url' });
+                                                                setTimeout(() => setCopiedField(null), 2000);
+                                                            }}
+                                                            isCopied={copiedField?.index === index && copiedField?.field === 'url'}
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-[100px_1fr_auto] gap-2 items-center">
+                                                        <span className="text-muted-foreground">Usuário:</span>
+                                                        <span className="truncate">{result.account.name}</span>
+                                                        <ButtonCopy
+                                                            onClick={() => {
+                                                                copyToClipboard({ text: result.account.name });
+                                                                setCopiedField({ index, field: 'name' });
+                                                                setTimeout(() => setCopiedField(null), 2000);
+                                                            }}
+                                                            isCopied={copiedField?.index === index && copiedField?.field === 'name'}
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-[100px_1fr_auto] gap-2 items-center">
+                                                        <span className="text-muted-foreground">Senha:</span>
+                                                        <span className="truncate">{result.account.password}</span>
+                                                        <ButtonCopy
+                                                            onClick={() => {
+                                                                copyToClipboard({ text: result.account.password });
+                                                                setCopiedField({ index, field: 'password' });
+                                                                setTimeout(() => setCopiedField(null), 2000);
+                                                            }}
+                                                            isCopied={copiedField?.index === index && copiedField?.field === 'password'}
+                                                        />
+                                                    </div>
+
+                                                    {result.status.success && result.status.data && (
+                                                        <>
+                                                            {result.status.data.expirationDate && (
+                                                                <div className="grid grid-cols-[100px_1fr] gap-2">
+                                                                    <span className="text-muted-foreground">Expira em:</span>
+                                                                    <span>{new Date(parseInt(result.status.data.expirationDate) * 1000).toLocaleDateString()}</span>
+                                                                </div>
+                                                            )}
+                                                            {result.status.data.maxConnections && (
+                                                                <div className="grid grid-cols-[100px_1fr] gap-2">
+                                                                    <span className="text-muted-foreground">Conexões:</span>
+                                                                    <span>{result.status.data.activeConnections || '0'}/{result.status.data.maxConnections}</span>
+                                                                </div>
+                                                            )}
+                                                            {result.status.data.status && (
+                                                                <div className="grid grid-cols-[100px_1fr] gap-2">
+                                                                    <span className="text-muted-foreground">Status:</span>
+                                                                    <span className="capitalize">{result.status.data.status}</span>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+
+                                                    {!result.status.success && result.status.error && (
+                                                        <div className="flex items-start gap-2 text-red-600 dark:text-red-400">
+                                                            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                                            <span>{result.status.error}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </ScaleIn>
+                                        )}
+                                    </div>
+                                </SlideIn>
+                            )}
+                        />
                         {isLoading && currentTestingIndex !== undefined && currentTestingIndex >= results.length && (
                             <SlideIn key="testing-now" delay={results.length}>
                                 <div className="p-3 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
