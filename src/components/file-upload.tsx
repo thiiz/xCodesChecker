@@ -58,12 +58,6 @@ export function FileUpload({ onAccountsLoaded }: FileUploadProps) {
                 // Salvar no localStorage
                 localStorage.setItem('uploadedAccounts', JSON.stringify(accounts));
 
-                setUploadStatus({
-                    success: true,
-                    message: `${accounts.length} contas carregadas com sucesso`,
-                    count: accounts.length,
-                });
-
                 if (onAccountsLoaded) {
                     onAccountsLoaded(accounts.length);
                 }
@@ -126,9 +120,24 @@ export function FileUpload({ onAccountsLoaded }: FileUploadProps) {
                 }
             }
         }
-
-        return accounts;
-    };
+        const uniqueAccounts = accounts.filter((account, index, self) =>
+            index === self.findIndex(a => a.name === account.name && a.password === account.password && a.url === account.url)
+        );
+        if (uniqueAccounts.length === accounts.length) {
+            setUploadStatus({
+                success: true,
+                message: `${accounts.length} contas carregadas com sucesso`,
+                count: accounts.length,
+            });
+            return accounts;
+        }
+        setUploadStatus({
+            success: true,
+            message: `${accounts.length - uniqueAccounts.length}/${accounts.length} ~~> Contas Duplicadas Ignoradas.`,
+            count: accounts.length,
+        });
+        return uniqueAccounts;
+    }
 
 
     return (
@@ -173,16 +182,18 @@ export function FileUpload({ onAccountsLoaded }: FileUploadProps) {
                     )}
 
                     {uploadStatus && (
-                        <div
-                            className={`p-3 rounded-md text-sm flex items-center gap-2 ${uploadStatus.success ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'} transition-all duration-300`}
-                        >
-                            {uploadStatus.success ? (
-                                <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                            ) : (
-                                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                            )}
-                            <span>{uploadStatus.message}</span>
-                        </div>
+                        <>
+                            <div
+                                className={`p-3 rounded-md text-sm flex items-center gap-2 ${uploadStatus.success ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'} transition-all duration-300`}
+                            >
+                                {uploadStatus.success ? (
+                                    <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                                ) : (
+                                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                )}
+                                <span className='capitalize'>{uploadStatus.message}</span>
+                            </div>
+                        </>
                     )}
                 </CardContent>
             </Card>

@@ -28,6 +28,7 @@ export default function Home() {
   const [uploadedAccountsCount, setUploadedAccountsCount] = useState<number>(0)
   const [testResults, setTestResults] = useState<AccountTestResult[]>([])
   const [currentTestingIndex, setCurrentTestingIndex] = useState<number | undefined>(undefined)
+  const [isCancelled, setIsCancelled] = useState(false)
   // Verificar se existem contas carregadas no localStorage ao iniciar
   useEffect(() => {
     const storedAccounts = localStorage.getItem('uploadedAccounts');
@@ -45,6 +46,7 @@ export default function Home() {
     try {
       setIsTesting(true);
       setTestResults([]);
+      setIsCancelled(false);
       const storedAccounts = localStorage.getItem('uploadedAccounts');
 
       if (storedAccounts) {
@@ -65,6 +67,9 @@ export default function Home() {
             setTestResults(results);
 
             for (let i = 0; i < uniqueAccounts.length; i++) {
+              if (isCancelled) {
+                break;
+              }
               const account = uniqueAccounts[i];
               setCurrentTestingIndex(i);
 
@@ -129,6 +134,11 @@ export default function Home() {
     setTestResults([]);
   };
 
+  const handleCancel = () => {
+    setIsCancelled(true);
+    setIsTesting(false);
+  };
+
   return (
     <main className="py-8 md:py-12 lg:py-16 mx-auto max-w-4xl">
       {(testResults.length > 0 || isTesting) ? (
@@ -137,6 +147,7 @@ export default function Home() {
           isLoading={isTesting}
           currentTestingIndex={currentTestingIndex}
           onBack={handleBack}
+          onCancel={handleCancel}
         />
       )
         :
